@@ -114,11 +114,12 @@ export default {
 /* ── Databricks SQL Statement Execution API ───── */
 async function writeLead(rec, env) {
   // Parameterised INSERT — no string interpolation, no SQL injection surface
+  // submitted_at supplied inline as CURRENT_TIMESTAMP() — no DEFAULT feature flag needed
   const statement = `
     INSERT INTO tmc_solutions_jvs.tmc_solutions.leads
-      (name, email, company, phone, service, budget, message, ip_hash, user_agent)
+      (submitted_at, name, email, company, phone, service, budget, message, ip_hash, user_agent)
     VALUES
-      (:name, :email, :company, :phone, :service, :budget, :message, :ip_hash, :user_agent)
+      (CURRENT_TIMESTAMP(), :name, :email, :company, :phone, :service, :budget, :message, :ip_hash, :user_agent)
   `;
 
   const parameters = [
