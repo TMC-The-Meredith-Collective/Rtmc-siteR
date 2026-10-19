@@ -1,0 +1,28 @@
+// Static-site guards: CSP hash drift, placeholders, and form↔API contract. Run: npm test
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { inlineScriptHash } from '../scripts/csp-update.mjs';
+
+const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+const headers = readFileSync(new URL('../public/_headers', import.meta.url), 'utf8');
+
+test('exactly one inline <script> and no inline event handlers', () => {
+  assert.equal((html.match(/<script\b/g) ?? []).length, 1);
+  assert.doesNotMatch(html, /\son[a-z]+\s*=/i);
+});
+
+test('_headers CSP allows exactly the current inline script hash (run `npm run csp:update` after editing it)', () => {
+  assert.ok(headers.includes(`'${inlineScriptHash(html)}'`),
+    'CSP hash is stale — run: npm run csp:update');
+});
+
+test('no unfilled placeholders remain', () => {
+  assert.doesNotMatch(html, /YOUR_[A-Z_]+/);
+});
+
+test('form posts same-origin to /api/submit with the field names the Worker reads', () => {
+  assert.match(html, /const ENDPOINT\s*=\s*'\/api\/submit'/);
+  assert.match(html, /service:\s*form\.elements\.intent\.value/);
+  assert.doesNotMatch(html, /\bts:\s*new Date/);
+});

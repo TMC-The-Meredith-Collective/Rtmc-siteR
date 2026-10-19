@@ -22,3 +22,9 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Wrangler local secrets / secret files — NEVER commit
+.dev.vars
+.dev.vars.*
+*.secrets.json
+.secrets*

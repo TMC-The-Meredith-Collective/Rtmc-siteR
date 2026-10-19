@@ -1,28 +1,62 @@
 # tmcsolutions-site
 
-Static site for tmcsolutions-org.net. No build step.
+The site and lead-intake API for **tmcsolutions-org.net**, deployed as **one Cloudflare Worker** with static assets.
+There's no framework and no build step.
 
-## Files
+**First production deploy: follow [`docs/DEPLOY-RUNBOOK.md`](docs/DEPLOY-RUNBOOK.md).**
 
-| Path | Purpose |
+## Layout
+
+| Path | Purpose | Public? |
+|---|---|---|
+| `public/index.html` | The landing page (single file; one inline `<script>`) | yes |
+| `public/fonts/` | Self-hosted Matrix-Sans webfonts (exact names in runbook Phase 5) | yes |
+| `public/_headers` | Security headers for assets: CSP (script pinned by SHA-256), HSTS, frame/referrer/permissions policy | applied, not served |
+| `worker/tmc-lead-intake-worker.js` | `POST /api/submit` → Databricks | no |
+| `wrangler.toml` | Worker config: custom domains, assets, rate limit, required secrets | no |
+| `scripts/csp-update.mjs` | Rewrites the CSP script hash after you edit the inline script | no |
+| `test/` | `node:test` suites: Worker contract plus site guards (CSP drift, placeholders, form↔API fields) | no |
+| `docs/leads-table.sql` | Schema of record for the leads table | no |
+
+Only `public/` is web-reachable.
+
+## Commands
+
+```bash
+npm ci                 # install pinned wrangler (4.147.0)
+npm test               # 20 tests, no network
+npm run check          # tests + wrangler dry-run (validates config and bundles the Worker)
+npm run csp:update     # after ANY edit inside <script> in public/index.html
+npm run deploy         # check, then deploy (the only supported deploy path)
+```
+
+## API: `POST /api/submit`
+
+Same-origin JSON endpoint used by the contact form.
+
+| | |
 |---|---|
-| `index.html` | Home: mission, record, pillars, contact |
-| `jobs.html` | Job search page; Careerjet partner snippet goes in `#careerjet-results` |
-| `styles.css` | Shared styles |
-| `_headers` | Cloudflare Pages response headers |
+| Request | `Content-Type: application/json`, body ≤ 8 KB, `Origin` ∈ `ALLOWED_ORIGINS` |
+| Body | `name`*, `email`*, `message`*, `company`, `service` (one of `owner-operator`, `growing-business`, `developer-collab`, `investor-partner`, `other`), `phone`, `budget` |
+| 200 | `{"ok":true}`: row inserted |
+| 400 / 403 / 404 / 405 / 413 / 415 / 429 | Validation / origin / path / method / size / content-type / rate limit (3 per 60 s per IP hash) |
+| 500 | Databricks write failed; generic message to the visitor; status and error code (never data) logged |
 
-## Deploy (Cloudflare Pages, Git-connected)
+The Worker writes `tmc_solutions_jvs.tmc_solutions.leads` (see `docs/leads-table.sql`) with a parameterized INSERT,
+authenticating as service principal `tmc-lead-intake-sp` via OAuth M2M. The raw visitor IP is hashed (SHA-256) and is
+never stored or forwarded.
 
-1. Push this repo to GitHub.
-2. Cloudflare dashboard → Workers & Pages → Create application → Pages → Import an existing Git repository.
-3. Select the repo. Framework preset: None. Build command: empty. Build output directory: `/`.
-4. Save and Deploy. Verify on the `*.pages.dev` URL.
-5. Custom domains → add `tmcsolutions-org.net` and `www.tmcsolutions-org.net`. DNS records are created automatically because the zone is on the same account.
+## Configuration
 
-Every push to `main` redeploys. Preview deployments are created for other branches.
+- `[vars]` (in `wrangler.toml`, non-sensitive): `ALLOWED_ORIGINS`, `DATABRICKS_OAUTH_SCOPE`
+- Secrets (set with `npx wrangler secret put`, never committed): `DATABRICKS_HOST`, `DATABRICKS_WAREHOUSE_ID`,
+  `DATABRICKS_CLIENT_ID`, `DATABRICKS_CLIENT_SECRET`. Deploy refuses to run if any are missing.
 
 ## Before publishing
 
-- Confirm `russ.meredith@tmcsolutions-org.net` routes (Cloudflare Email Routing).
-- Footer shows "TMC Solutions" until the LLC filing completes; the legal-name line is commented in `index.html`.
-- Paste the Careerjet partner snippet into `jobs.html` after the affid is issued.
+- Confirm `russ.meredith@tmcsolutions-org.net` routes (Cloudflare Email Routing). The 500 fallback message points there.
+- Footer shows "TMC Solutions" until the LLC filing completes.
+
+## Backlog
+
+- Careerjet jobs page (`jobs.html`): not built yet.
