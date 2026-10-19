@@ -74,7 +74,7 @@ export default {
     }
 
     // ── Field extraction & validation ──────────────
-    const { name, email, company = '', intent = '', message, ts, source } = body;
+    const { name, email, company = '', phone = '', service = '', budget = '', message } = body;
 
     if (!name || !email || !message) {
       return json({ message: 'Required fields missing.' }, 400, env);
@@ -91,11 +91,12 @@ export default {
       name:     clean(name).slice(0, 128),
       email:    clean(email).slice(0, 254),
       company:  clean(company).slice(0, 256),
-      intent:   clean(intent).slice(0, 64),
-      message:  clean(message).slice(0, 2_000),
-      ts:       clean(ts).slice(0, 32) || new Date().toISOString(),
-      source:   clean(source).slice(0, 64) || 'unknown',
-      ip_hash:  ipHash        // SHA-256 of raw IP — privacy-safe
+      phone:    clean(phone).slice(0, 32),
+      service:  clean(service).slice(0, 128),
+      budget:   clean(budget).slice(0, 64),
+      message:    clean(message).slice(0, 2_000),
+      ip_hash:    ipHash,     // SHA-256 of raw IP — privacy-safe
+      user_agent: (request.headers.get('User-Agent') ?? '').slice(0, 512)
     };
 
     // ── Write to Databricks ────────────────────────
@@ -114,21 +115,22 @@ export default {
 async function writeLead(rec, env) {
   // Parameterised INSERT — no string interpolation, no SQL injection surface
   const statement = `
-    INSERT INTO tmc.leads
-      (name, email, company, intent, message, submitted_at, source, ip_hash)
+    INSERT INTO tmc_solutions_jvs.tmc_solutions.leads
+      (name, email, company, phone, service, budget, message, ip_hash, user_agent)
     VALUES
-      (:name, :email, :company, :intent, :message, :submitted_at, :source, :ip_hash)
+      (:name, :email, :company, :phone, :service, :budget, :message, :ip_hash, :user_agent)
   `;
 
   const parameters = [
-    { name: 'name',         value: rec.name,    type: 'STRING' },
-    { name: 'email',        value: rec.email,   type: 'STRING' },
-    { name: 'company',      value: rec.company, type: 'STRING' },
-    { name: 'intent',       value: rec.intent,  type: 'STRING' },
-    { name: 'message',      value: rec.message, type: 'STRING' },
-    { name: 'submitted_at', value: rec.ts,      type: 'STRING' },
-    { name: 'source',       value: rec.source,  type: 'STRING' },
-    { name: 'ip_hash',      value: rec.ip_hash, type: 'STRING' }
+    { name: 'name',       value: rec.name,       type: 'STRING' },
+    { name: 'email',      value: rec.email,       type: 'STRING' },
+    { name: 'company',    value: rec.company,     type: 'STRING' },
+    { name: 'phone',      value: rec.phone,       type: 'STRING' },
+    { name: 'service',    value: rec.service,     type: 'STRING' },
+    { name: 'budget',     value: rec.budget,      type: 'STRING' },
+    { name: 'message',    value: rec.message,     type: 'STRING' },
+    { name: 'ip_hash',    value: rec.ip_hash,     type: 'STRING' },
+    { name: 'user_agent', value: rec.user_agent,  type: 'STRING' }
   ];
 
   const endpoint = `https://${env.DATABRICKS_HOST}/api/2.0/sql/statements`;
