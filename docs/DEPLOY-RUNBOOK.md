@@ -104,7 +104,7 @@ git ls-files --eol public/index.html public/_headers
 ```bash
 node --version          # Expect v22 or newer (wrangler 4.147.0 hard-requires 22)
 npm ci                  # installs the pinned wrangler 4.147.0 from package-lock.json
-npm run check           # Expect "# tests 21", "# fail 0", then "--dry-run: exiting now."
+npm run check           # Expect "# tests 22", "# fail 0", then "--dry-run: exiting now."
 ```
 If Node is below v22, stop: the user installs the current Node LTS from nodejs.org, reopens the terminal, and you rerun 0.3.
 
@@ -238,7 +238,7 @@ npx wrangler secret list
 npm run deploy
 ```
 **Expect**, in order:
-1. `# tests 21` and `# fail 0`
+1. `# tests 22` and `# fail 0`
 2. `--dry-run: exiting now.`
 3. Upload summary, then a **Deployed tmc-solutions-site triggers** section listing
    `tmcsolutions-org.net (custom domain)` and `www.tmcsolutions-org.net (custom domain)`
@@ -311,17 +311,24 @@ every MX and TXT record you noted in 0.5 is still there, unchanged. Then send a 
 
 ## Phase 5 (optional): Matrix-Sans fonts
 
-Until the font files exist, the page falls back to Courier New, then monospace. To add them:
+**Already done:** `public/fonts/MatrixSans-Regular.woff2` is in the repo and deploys in Phase 3. Without a Bold file,
+browsers synthesize bold from Regular. Missing files fall back to Courier New, then monospace.
 
-1. **[YOU]** Check two things in your Matrix-Sans license: does it permit **web self-hosting**, and does it permit
-   **redistribution in a public repository**? This repo is public on GitHub, so committing the files publishes them.
-2. **[YOU]** Put the files in `public/fonts/` with **exactly** these names (whichever formats you have; `.woff2` matters most):
-   `Matrix-Sans.woff2`, `Matrix-Sans.woff`, `Matrix-Sans.otf`, `Matrix-Sans-Bold.woff2`, `Matrix-Sans-Bold.woff`, `Matrix-Sans-Bold.otf`.
-   Tell Claude Code which case applies: **"redistribution allowed"** or **"self-host only"**.
+**License check (applies to the file already committed):** confirm that your Matrix-Sans license permits **web self-hosting**
+and **redistribution in a public repository**. The repo is public, so the Regular file is already published on GitHub. If the
+license doesn't allow that, tell Claude Code, which will stop. Removing a file from the repo and its history is your decision
+and your action.
+
+To add more weights or formats:
+
+1. **[YOU]** Put the files in `public/fonts/` with **exactly** these names (these are the only ones the CSS references; an
+   automated test fails on any font file it doesn't reference):
+   `MatrixSans-Regular.woff`, `MatrixSans-Regular.otf`, `MatrixSans-Bold.woff2`, `MatrixSans-Bold.woff`, `MatrixSans-Bold.otf`.
+2. **[YOU]** Tell Claude Code which case applies: **"redistribution allowed"** or **"self-host only"**.
 3. **[CLAUDE CODE]** (Bash tool timeout: 600000 ms) `npm run deploy`, then check that
-   `curl -s -o /dev/null -w '%{http_code}' https://tmcsolutions-org.net/fonts/Matrix-Sans.woff2` returns `200`. Then:
+   `curl -s -o /dev/null -w '%{http_code}' https://tmcsolutions-org.net/fonts/<each new file>` returns `200`. Then:
    - **redistribution allowed:** `git add public/fonts && git commit -m "feat: add Matrix-Sans webfonts" && git push origin main`
-   - **self-host only:** don't commit. Append the six filenames (as `public/fonts/<name>`) to `.git/info/exclude`, which is local
+   - **self-host only:** don't commit. Append the new filenames (as `public/fonts/<name>`) to `.git/info/exclude`, which is local
      and never pushed. Tell the user that every future deploy must run from this machine, and that the optional Workers
      Builds auto-deploy (Phase 6) would ship without the fonts.
 

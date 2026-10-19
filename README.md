@@ -10,7 +10,7 @@ There's no framework and no build step.
 | Path | Purpose | Public? |
 |---|---|---|
 | `public/index.html` | The landing page (single file; one inline `<script>`) | yes |
-| `public/fonts/` | Self-hosted Matrix-Sans webfonts (exact names in runbook Phase 5) | yes |
+| `public/fonts/` | Self-hosted Matrix-Sans webfonts (`MatrixSans-Regular.*`, `MatrixSans-Bold.*`; see runbook Phase 5) | yes |
 | `public/_headers` | Security headers for assets: CSP (script pinned by SHA-256), HSTS, frame/referrer/permissions policy | applied, not served |
 | `worker/tmc-lead-intake-worker.js` | `POST /api/submit` → Databricks | no |
 | `wrangler.toml` | Worker config: custom domains, assets, rate limit, required secrets | no |
@@ -26,7 +26,7 @@ Requires Node.js 22+ (wrangler 4.147.0 refuses to run on older versions).
 
 ```bash
 npm ci                 # install pinned wrangler (4.147.0)
-npm test               # 21 tests, no network
+npm test               # 22 tests, no network
 npm run check          # tests + wrangler dry-run (validates config and bundles the Worker)
 npm run csp:update     # after ANY edit inside <script> in public/index.html
 npm run deploy         # check, then deploy (the only supported deploy path)
