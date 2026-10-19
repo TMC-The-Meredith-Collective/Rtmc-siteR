@@ -11,11 +11,11 @@
  *            sanitize → OAuth M2M token → parameterized INSERT via Databricks SQL
  *            Statement Execution API.
  *
- * Bindings / config (wrangler.toml unless noted):
- *   DATABRICKS_HOST            [vars]   workspace host, no scheme
- *   DATABRICKS_WAREHOUSE_ID    [vars]   SQL warehouse ID
- *   DATABRICKS_OAUTH_SCOPE     [vars]   OAuth scope requested (default "all-apis")
+ * Bindings / config (see wrangler.toml):
  *   ALLOWED_ORIGINS            [vars]   comma-separated exact origins
+ *   DATABRICKS_OAUTH_SCOPE     [vars]   OAuth scope requested (default "all-apis")
+ *   DATABRICKS_HOST            SECRET   workspace host, no scheme
+ *   DATABRICKS_WAREHOUSE_ID    SECRET   SQL warehouse ID
  *   DATABRICKS_CLIENT_ID       SECRET   service principal application ID
  *   DATABRICKS_CLIENT_SECRET   SECRET   service principal OAuth secret
  *   LEAD_LIMITER               [[ratelimits]] binding

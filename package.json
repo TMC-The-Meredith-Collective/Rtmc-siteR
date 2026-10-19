@@ -4,7 +4,7 @@
   "type": "module",
   "description": "tmcsolutions-org.net — static site + lead-intake API on one Cloudflare Worker",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "test": "node --test \"test/*.test.mjs\"",

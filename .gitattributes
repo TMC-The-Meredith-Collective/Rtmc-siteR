@@ -1,0 +1,6 @@
+# Keep LF everywhere: the CSP in public/_headers pins a SHA-256 of the inline <script>
+# in public/index.html, and CRLF checkouts (Git for Windows default) would change that hash.
+* text=auto eol=lf
+*.woff2 binary
+*.woff binary
+*.otf binary

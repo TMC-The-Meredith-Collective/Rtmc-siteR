@@ -22,9 +22,11 @@ Only `public/` is web-reachable.
 
 ## Commands
 
+Requires Node.js 22+ (wrangler 4.147.0 refuses to run on older versions).
+
 ```bash
 npm ci                 # install pinned wrangler (4.147.0)
-npm test               # 20 tests, no network
+npm test               # 21 tests, no network
 npm run check          # tests + wrangler dry-run (validates config and bundles the Worker)
 npm run csp:update     # after ANY edit inside <script> in public/index.html
 npm run deploy         # check, then deploy (the only supported deploy path)
@@ -49,7 +51,7 @@ never stored or forwarded.
 ## Configuration
 
 - `[vars]` (in `wrangler.toml`, non-sensitive): `ALLOWED_ORIGINS`, `DATABRICKS_OAUTH_SCOPE`
-- Secrets (set with `npx wrangler secret put`, never committed): `DATABRICKS_HOST`, `DATABRICKS_WAREHOUSE_ID`,
+- Secrets (set with `npx wrangler secret put`; in PowerShell use `npx.cmd`; never committed): `DATABRICKS_HOST`, `DATABRICKS_WAREHOUSE_ID`,
   `DATABRICKS_CLIENT_ID`, `DATABRICKS_CLIENT_SECRET`. Deploy refuses to run if any are missing.
 
 ## Before publishing

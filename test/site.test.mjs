@@ -7,6 +7,11 @@ import { inlineScriptHash } from '../scripts/csp-update.mjs';
 const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
 const headers = readFileSync(new URL('../public/_headers', import.meta.url), 'utf8');
 
+test('public/index.html and _headers use LF line endings (CRLF changes the CSP hash)', () => {
+  assert.ok(!html.includes('\r'), 'public/index.html has CRLF — see runbook 0.2 (line-ending check)');
+  assert.ok(!headers.includes('\r'), 'public/_headers has CRLF — see runbook 0.2 (line-ending check)');
+});
+
 test('exactly one inline <script> and no inline event handlers', () => {
   assert.equal((html.match(/<script\b/g) ?? []).length, 1);
   assert.doesNotMatch(html, /\son[a-z]+\s*=/i);
