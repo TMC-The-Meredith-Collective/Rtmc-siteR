@@ -1,3 +1,4 @@
+-- Table name change from 'leads' to 'tmc_site_leads' on 10.20.2026
 -- tmc_solutions_jvs.tmc_solutions.tmc_site_leads — schema of record (applied 2026-10-18)
 -- Written ONLY by the lead-intake Worker (worker/tmc-lead-intake-worker.js) through the
 -- service principal described in docs/DEPLOY-RUNBOOK.md, Phase 1.
