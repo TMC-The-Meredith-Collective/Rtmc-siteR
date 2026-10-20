@@ -7,32 +7,14 @@
   <title>TMC Solutions</title>
   <link rel="canonical" href="https://tmcsolutions-org.net/">
   <meta name="referrer" content="strict-origin-when-cross-origin">
-  <!-- Matrix-Sans: self-hosted. Copy your font files into /fonts/ alongside this HTML on deploy. -->
+  <!-- Share Tech Mono (SIL Open Font License 1.1): self-hosted from /fonts/. -->
   <style>
-/* ── MATRIX-SANS FONT FACE ─────────────────────── */
-/* Host the .woff2 / .woff / .otf files in /fonts/ on Cloudflare Pages.
-   Visitor fallback until they are present: Courier New → monospace.
-   local() attempts to use any copy already installed on the visitor's device. */
+/* ── SHARE TECH MONO FONT FACE ─────────────────── */
+/* Regular weight only; the browser synthesizes bold. Fallback: Courier New → monospace. */
 @font-face {
-  font-family: 'Matrix-Sans';
-  src: local('Matrix-Sans'),
-       local('MatrixSans'),
-       local('Matrix Sans Regular'),
-       url('/fonts/MatrixSans-Regular.woff2') format('woff2'),
-       url('/fonts/MatrixSans-Regular.woff')  format('woff'),
-       url('/fonts/MatrixSans-Regular.otf')   format('opentype');
+  font-family: 'Share Tech Mono';
+  src: url('/fonts/ShareTechMono-Regular.woff2') format('woff2');
   font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Matrix-Sans';
-  src: local('Matrix-Sans Bold'),
-       local('MatrixSans-Bold'),
-       url('/fonts/MatrixSans-Bold.woff2') format('woff2'),
-       url('/fonts/MatrixSans-Bold.woff')  format('woff'),
-       url('/fonts/MatrixSans-Bold.otf')   format('opentype');
-  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -64,7 +46,7 @@
   --ink-muted:   #3A3D4E;   /* disabled / placeholder */
 
   /* Fonts */
-  --font: 'Matrix-Sans', 'Courier New', 'Lucida Console', monospace;
+  --font: 'Share Tech Mono', 'Courier New', 'Lucida Console', monospace;
 
   /* Layout */
   --site-w: 1040px;

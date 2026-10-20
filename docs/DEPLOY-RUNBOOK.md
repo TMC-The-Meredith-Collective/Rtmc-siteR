@@ -309,28 +309,24 @@ every MX and TXT record you noted in 0.5 is still there, unchanged. Then send a 
 
 ---
 
-## Phase 5 (optional): Matrix-Sans fonts
+## Phase 5 (done): Share Tech Mono font
 
-**Already done:** `public/fonts/MatrixSans-Regular.woff2` is in the repo and deploys in Phase 3. Without a Bold file,
-browsers synthesize bold from Regular. Missing files fall back to Courier New, then monospace.
+The page uses **Share Tech Mono**, licensed under the SIL Open Font License 1.1, which permits web self-hosting and
+redistribution in a public repository. It replaced Matrix-Sans, whose file had no license. The deployed file is
+`public/fonts/ShareTechMono-Regular.woff2` (the `latin-400-normal` woff2 from the `@fontsource/share-tech-mono` package). It
+deploys in Phase 3. Only the Regular weight ships, so browsers synthesize bold. If the file is missing, the page falls
+back to Courier New, then monospace.
 
-**License check (applies to the file already committed):** confirm that your Matrix-Sans license permits **web self-hosting**
-and **redistribution in a public repository**. The repo is public, so the Regular file is already published on GitHub. If the
-license doesn't allow that, tell Claude Code, which will stop. Removing a file from the repo and its history is your decision
-and your action.
+To change the font:
 
-To add more weights or formats:
-
-1. **[YOU]** Put the files in `public/fonts/` with **exactly** these names (these are the only ones the CSS references; an
-   automated test fails on any font file it doesn't reference):
-   `MatrixSans-Regular.woff`, `MatrixSans-Regular.otf`, `MatrixSans-Bold.woff2`, `MatrixSans-Bold.woff`, `MatrixSans-Bold.otf`.
-2. **[YOU]** Tell Claude Code which case applies: **"redistribution allowed"** or **"self-host only"**.
+1. **[YOU]** Confirm the new font's license permits web self-hosting **and** redistribution in a public repository. If it
+   doesn't, stop. Don't commit the file.
+2. **[YOU]** Put the file in `public/fonts/` and add a matching `@font-face` `url('/fonts/<name>')` in `public/index.html`.
+   An automated test fails on any font file the page doesn't reference.
 3. **[CLAUDE CODE]** (Bash tool timeout: 600000 ms) `npm run deploy`, then check that
-   `curl -s -o /dev/null -w '%{http_code}' https://tmcsolutions-org.net/fonts/<each new file>` returns `200`. Then:
-   - **redistribution allowed:** `git add public/fonts && git commit -m "feat: add Matrix-Sans webfonts" && git push origin main`
-   - **self-host only:** don't commit. Append the new filenames (as `public/fonts/<name>`) to `.git/info/exclude`, which is local
-     and never pushed. Tell the user that every future deploy must run from this machine, and that the optional Workers
-     Builds auto-deploy (Phase 6) would ship without the fonts.
+   `curl -s -o /dev/null -w '%{http_code}' https://tmcsolutions-org.net/fonts/<file>` returns `200`. Then commit and push to `main`.
+
+A removed font file stays in the repository's git history. Rewriting history is your decision and your action.
 
 ---
 
