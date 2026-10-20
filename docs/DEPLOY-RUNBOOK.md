@@ -315,7 +315,7 @@ The page uses **Share Tech Mono**, licensed under the SIL Open Font License 1.1,
 redistribution in a public repository. It replaced Matrix-Sans, whose file had no license. The deployed file is
 `public/fonts/ShareTechMono-Regular.woff2` (the `latin-400-normal` woff2 from the `@fontsource/share-tech-mono` package). It
 deploys in Phase 3. Only the Regular weight ships, so browsers synthesize bold. If the file is missing, the page falls
-back to Courier New, then monospace.
+back to Courier New, then monospace. The license text ships beside it as `public/fonts/ShareTechMono-OFL.txt`; keep the two files together.
 
 To change the font:
 
