@@ -41,7 +41,7 @@ matching Troubleshooting row. Do not improvise around a failure.
    custom-domain DNS records for `tmcsolutions-org.net` and `www`. Run it only after the user has replied "done" to
    Phase 0.5. Wrangler in a non-interactive shell **silently overwrites** conflicting records and takes domains away from
    other Workers without asking, so 0.5 is the only protection.
-4. **Never edit `wrangler.toml` `[vars]` to hold credentials**, and never run DDL against the leads table.
+4. **Never edit `wrangler.toml` `[vars]` to hold credentials**, and never run DDL against the tmc_site_leads table.
    Schema changes are migrations and need explicit approval.
 5. **Deploy only through `npm run deploy`.** It runs the test suite and a Wrangler dry run first, and refuses to deploy if either fails.
 6. On any unexpected output: **stop and report.** Don't retry with variations.
@@ -62,7 +62,7 @@ matching Troubleshooting row. Do not improvise around a failure.
                      └──────────────────┬──────────────────┘
                                         │ OAuth M2M (client credentials, 1-h token)
                                         ▼
-         Databricks SQL Statement API → INSERT INTO tmc_solutions_jvs.tmc_solutions.leads
+         Databricks SQL Statement API → INSERT INTO tmc_solutions_jvs.tmc_solutions.tmc_site_leads
          as service principal "tmc-lead-intake-sp" (USE CATALOG/SCHEMA, SELECT, INSERT; CAN USE one warehouse)
 ```
 
@@ -166,17 +166,17 @@ classic warehouses can take longer than the Worker's 30-second wait on a cold st
 ```sql
 GRANT USE CATALOG ON CATALOG tmc_solutions_jvs                        TO `<application-id>`;
 GRANT USE SCHEMA  ON SCHEMA  tmc_solutions_jvs.tmc_solutions          TO `<application-id>`;
-GRANT SELECT      ON TABLE   tmc_solutions_jvs.tmc_solutions.leads    TO `<application-id>`;
-GRANT INSERT      ON TABLE   tmc_solutions_jvs.tmc_solutions.leads    TO `<application-id>`;
+GRANT SELECT      ON TABLE   tmc_solutions_jvs.tmc_solutions.tmc_site_leads    TO `<application-id>`;
+GRANT INSERT      ON TABLE   tmc_solutions_jvs.tmc_solutions.tmc_site_leads    TO `<application-id>`;
 
-SHOW GRANTS `<application-id>` ON TABLE tmc_solutions_jvs.tmc_solutions.leads;
+SHOW GRANTS `<application-id>` ON TABLE tmc_solutions_jvs.tmc_solutions.tmc_site_leads;
 ```
 - **Expect:** `SHOW GRANTS` lists `SELECT` and `INSERT`.
 - **MODIFY fallback.** Fine-grained `INSERT` is Beta. It needs Databricks Runtime 18.1+ and doesn't apply on compute in
   dedicated access mode, so `GRANT INSERT` can succeed while the actual INSERT is still denied. Switch to the fallback
   **either** when the `GRANT INSERT` line errors **or** when Phase 4.2 fails with a permission error (Troubleshooting):
   ```sql
-  GRANT MODIFY ON TABLE tmc_solutions_jvs.tmc_solutions.leads TO `<application-id>`;
+  GRANT MODIFY ON TABLE tmc_solutions_jvs.tmc_solutions.tmc_site_leads TO `<application-id>`;
   ```
   Residual risk: `MODIFY` also permits UPDATE and DELETE. Note which grant you used. Phase 4.3 and the leak response
   depend on it. Move back to `INSERT` once it works on your warehouse.
@@ -289,7 +289,7 @@ curl -s -w ' %{http_code}\n' -X POST https://tmcsolutions-org.net/api/submit \
 **4.3 [YOU · browser] Confirm the row landed.** Databricks SQL editor:
 ```sql
 SELECT id, submitted_at, name, email, service, length(ip_hash) AS hash_len
-FROM tmc_solutions_jvs.tmc_solutions.leads
+FROM tmc_solutions_jvs.tmc_solutions.tmc_site_leads
 ORDER BY submitted_at DESC LIMIT 5;
 ```
 **Expect:** the "Deploy Smoke Test" row, `submitted_at` within the last few minutes (UTC), `hash_len` = 64. You can
@@ -342,7 +342,7 @@ To add more weights or formats:
 | **Roll back** | `npx wrangler deployments list` → `npx wrangler rollback <version-id>` (version from a previous Phase 3.1 report). This restores that version's **code, assets, and secret values**. In a non-interactive shell Wrangler doesn't stop to warn you when secrets changed since then. So if you've rotated a secret since that version, immediately re-run `npx.cmd wrangler secret put DATABRICKS_CLIENT_SECRET` (and any other rotated secret), then rerun Phase 4.2. |
 | **Watch live errors** | `npx wrangler tail --format pretty`. Logs carry status codes and error codes only, never lead data. |
 | **Rotate the OAuth secret** (yearly, before expiry) | Databricks: `tmc-lead-intake-sp` → **Secrets** → **Generate secret** → **[YOU · terminal]** `npx.cmd wrangler secret put DATABRICKS_CLIENT_SECRET` → rerun Phase 4.2 → then delete the **old** secret in Databricks. |
-| **Suspected credential leak** | Deleting the secret alone isn't enough, because access tokens already issued (including the Worker's cached one) stay valid for up to 1 hour. Do all of these right away: (1) `REVOKE ALL PRIVILEGES ON TABLE tmc_solutions_jvs.tmc_solutions.leads FROM \`<application-id>\`;` (2) remove the SP's **Can use** on the warehouse; (3) delete the SP's secret. The form shows the "email us directly" fallback until you're done. Then review recent rows and Query History for the SP, generate a new secret, re-apply 1.4–1.5, `secret put` it, and rerun Phase 4.2. |
+| **Suspected credential leak** | Deleting the secret alone isn't enough, because access tokens already issued (including the Worker's cached one) stay valid for up to 1 hour. Do all of these right away: (1) `REVOKE ALL PRIVILEGES ON TABLE tmc_solutions_jvs.tmc_solutions.tmc_site_leads FROM \`<application-id>\`;` (2) remove the SP's **Can use** on the warehouse; (3) delete the SP's secret. The form shows the "email us directly" fallback until you're done. Then review recent rows and Query History for the SP, generate a new secret, re-apply 1.4–1.5, `secret put` it, and rerun Phase 4.2. |
 | **Narrow the OAuth scope** (optional hardening) | Databricks recommends against **all APIs**. To try a narrower scope: generate a new SP secret with only the SQL scope selected → `npx.cmd wrangler secret put DATABRICKS_CLIENT_SECRET` → change `DATABRICKS_OAUTH_SCOPE` in `wrangler.toml` to `sql` → `npm run deploy` → rerun Phase 4.2. If 4.2 fails with `token endpoint HTTP 400`, revert both. |
 | **Auto-deploy on push** (optional) | Dashboard → **Workers & Pages** → `tmc-solutions-site` → **Settings** → **Builds** → **Connect** → repo `TMC-The-Meredith-Collective/Rtmc-siteR`, branch `main`, deploy command `npm run deploy`. Runtime secrets persist on the Worker and don't go into build settings. |
 | **Redirect `www` → apex** (optional SEO polish) | Currently both hostnames serve the site, and `<link rel="canonical">` points search engines at the apex. To hard-redirect instead: dashboard → zone → **Rules** → **Redirect Rules** → template **Redirect from WWW to root** → Deploy. |

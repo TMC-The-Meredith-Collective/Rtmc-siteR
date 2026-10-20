@@ -6,7 +6,7 @@ import worker, { __test } from '../worker/tmc-lead-intake-worker.js';
 
 const APEX = 'https://tmcsolutions-org.net';
 const WWW  = 'https://www.tmcsolutions-org.net';
-const TABLE = 'tmc_solutions_jvs.tmc_solutions.leads';
+const TABLE = 'tmc_solutions_jvs.tmc_solutions.tmc_site_leads';
 
 let calls;          // outbound fetches captured
 let dbxResponse;    // what the statement endpoint returns
@@ -172,11 +172,11 @@ test('access token is cached across requests', async () => {
 });
 
 test('Databricks failure → 500 with generic message, no internals leaked', async () => {
-  dbxResponse = { status: { state: 'FAILED', error: { error_code: 'PERMISSION_DENIED', message: 'User sp-123 lacks INSERT on leads' } } };
+  dbxResponse = { status: { state: 'FAILED', error: { error_code: 'PERMISSION_DENIED', message: 'User sp-123 lacks INSERT on tmc_site_leads' } } };
   const res = await worker.fetch(req({ body: valid }), makeEnv(), ctx);
   assert.equal(res.status, 500);
   const text = await res.text();
-  assert.doesNotMatch(text, /PERMISSION|sp-123|leads/);
+  assert.doesNotMatch(text, /PERMISSION|sp-123|tmc_site_leads/);
 });
 
 test('API responses are no-store, nosniff, and carry no CORS grant', async () => {

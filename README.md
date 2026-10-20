@@ -16,7 +16,7 @@ There's no framework and no build step.
 | `wrangler.toml` | Worker config: custom domains, assets, rate limit, required secrets | no |
 | `scripts/csp-update.mjs` | Rewrites the CSP script hash after you edit the inline script | no |
 | `test/` | `node:test` suites: Worker contract plus site guards (CSP drift, placeholders, form↔API fields) | no |
-| `docs/leads-table.sql` | Schema of record for the leads table | no |
+| `docs/leads-table.sql` | Schema of record for the tmc_site_leads table | no |
 
 Only `public/` is web-reachable.
 
@@ -44,7 +44,7 @@ Same-origin JSON endpoint used by the contact form.
 | 400 / 403 / 404 / 405 / 413 / 415 / 429 | Validation / origin / path / method / size / content-type / rate limit (3 per 60 s per IP hash) |
 | 500 | Databricks write failed; generic message to the visitor; status and error code (never data) logged |
 
-The Worker writes `tmc_solutions_jvs.tmc_solutions.leads` (see `docs/leads-table.sql`) with a parameterized INSERT,
+The Worker writes `tmc_solutions_jvs.tmc_solutions.tmc_site_leads` (see `docs/leads-table.sql`) with a parameterized INSERT,
 authenticating as service principal `tmc-lead-intake-sp` via OAuth M2M. The raw visitor IP is hashed (SHA-256) and is
 never stored or forwarded.
 

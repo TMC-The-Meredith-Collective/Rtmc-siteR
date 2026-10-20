@@ -1,4 +1,4 @@
--- tmc_solutions_jvs.tmc_solutions.leads — schema of record (applied 2026-10-18)
+-- tmc_solutions_jvs.tmc_solutions.tmc_site_leads — schema of record (applied 2026-10-18)
 -- Written ONLY by the lead-intake Worker (worker/tmc-lead-intake-worker.js) through the
 -- service principal described in docs/DEPLOY-RUNBOOK.md, Phase 1.
 --
@@ -6,7 +6,7 @@
 -- in the INSERT, so the Delta 'allowColumnDefaults' table feature is not needed.
 -- Any change to this schema is a migration: get explicit approval before running it.
 
-CREATE TABLE IF NOT EXISTS tmc_solutions_jvs.tmc_solutions.leads (
+CREATE TABLE IF NOT EXISTS tmc_solutions_jvs.tmc_solutions.tmc_site_leads (
   id            BIGINT GENERATED ALWAYS AS IDENTITY,
   submitted_at  TIMESTAMP,
   name          STRING    NOT NULL,

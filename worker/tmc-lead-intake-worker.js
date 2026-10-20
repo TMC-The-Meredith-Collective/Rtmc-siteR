@@ -21,7 +21,7 @@
  *   LEAD_LIMITER               [[ratelimits]] binding
  */
 
-const TABLE           = 'tmc_solutions_jvs.tmc_solutions.leads';
+const TABLE           = 'tmc_solutions_jvs.tmc_solutions.tmc_site_leads';
 const SUBMIT_PATH     = '/api/submit';
 const MAX_BODY_BYTES  = 8_192;
 const TOKEN_SKEW_MS   = 60_000;   // refresh token 60s before expiry
